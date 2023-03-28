@@ -6,8 +6,16 @@ import (
 	"testing"
 )
 
-func TestGmailGetMessages(t *testing.T) {
+func ignoreTestWithoutEnvironmentVariables(t *testing.T, envVars ...string) {
+	for _, envVar := range envVars {
+		if os.Getenv(envVar) == "" {
+			t.Skipf("environment variable %s not set", envVar)
+		}
+	}
+}
 
+func TestGmailGetMessages(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
 	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
@@ -25,6 +33,7 @@ func TestGmailGetMessages(t *testing.T) {
 }
 
 func TestCallWatch(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
 	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
@@ -40,6 +49,7 @@ func TestCallWatch(t *testing.T) {
 }
 
 func TestGetHistories(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
 	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {

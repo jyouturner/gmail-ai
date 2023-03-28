@@ -6,6 +6,7 @@ import (
 )
 
 func TestChatGPTAPI(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "CHATGPT_API_KEY")
 	chatgpt := NewChatGPTClient(os.Getenv("CHATGPT_API_KEY"))
 	rejected, err := chatgpt.IsRejectionEmail("Good")
 	if err != nil {
@@ -31,6 +32,7 @@ func TestChatGPTAPIRejected(t *testing.T) {
 	
 	GEICO Hiring Team
 	**Please do not reply to this message as it has been sent from an unmonitored account.** `
+	ignoreTestWithoutEnvironmentVariables(t, "CHATGPT_API_KEY")
 	chatgpt := NewChatGPTClient(os.Getenv("CHATGPT_API_KEY"))
 	rejected, err := chatgpt.IsRejectionEmail(email)
 	if err != nil {
