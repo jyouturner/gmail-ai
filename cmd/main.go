@@ -2,14 +2,48 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/jyouturer/gmail-ai/automation"
 	integration "github.com/jyouturer/gmail-ai/integrations"
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	var configFilePath string
+	app := &cli.App{
+		Name:  "gmail-ai",
+		Usage: "use ChatGPT to automate your gmails",
+		Commands: []*cli.Command{
+			{
+				Name:  "label-rejection",
+				Usage: "label rejection emails",
+				Action: func(cCtx *cli.Context) error {
+					labelRejections(configFilePath)
+					return nil
+				},
+			},
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "config",
+				Value:       "config.json",
+				Usage:       "path to the config file",
+				Destination: &configFilePath,
+				Required:    true,
+			},
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func labelRejections(configFilePath string) {
 	// Load the configuration file
-	config, err := automation.LoadConfig("config.json")
+	config, err := automation.LoadConfig(configFilePath)
 	if err != nil {
 		log.Fatalf("Error loading config file: %v", err)
 	}

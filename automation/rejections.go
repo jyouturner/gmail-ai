@@ -30,10 +30,10 @@ func ProcessNewEmails(gmailService *gmail.Service, chatGPTClient *integration.Ch
 
 		if isRejection {
 			// Mark the email as read, archive it, or apply a label
-			//err := setLabel(gmailService, message.Id, "Rejections", true, false)
-			//if err != nil {
-			//	log.Fatalf("Error setting label on message %v: %v", message.Id, err)
-			//}
+			err := integration.SetLabel(gmailService, message.Id, "Rejections", true, false)
+			if err != nil {
+				log.Fatalf("Error setting label on message %v: %v", message.Id, err)
+			}
 			fmt.Println("Rejection email found!")
 		}
 
