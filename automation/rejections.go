@@ -1,12 +1,39 @@
 package automation
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
+	"golang.org/x/time/rate"
 	"google.golang.org/api/gmail/v1"
 )
+
+type RateLimiter struct {
+	limiter  *rate.Limiter
+	requests int
+}
+
+func NewRateLimiter(r rate.Limit, b int, requests int) *RateLimiter {
+	return &RateLimiter{
+		limiter:  rate.NewLimiter(r, b),
+		requests: requests,
+	}
+}
+
+func (r *RateLimiter) CallAPI() {
+	for i := 0; i < r.requests; i++ {
+		err := r.limiter.Wait(context.Background())
+		if err != nil {
+			fmt.Println("Rate limit error:", err)
+			return
+		}
+
+		// Make your API call here
+		fmt.Println("API request:", i+1)
+	}
+}
 
 func ProcessNewEmails(gmailService *gmail.Service, chatGPTClient *integration.ChatGPTClient) {
 	// List unread emails

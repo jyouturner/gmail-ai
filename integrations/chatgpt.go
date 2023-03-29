@@ -7,14 +7,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"golang.org/x/time/rate"
 )
 
 type ChatGPTClient struct {
 	ChatGPTAPIURL string
 	APIKey        string
+	limiter       *rate.Limiter
 }
 
 func NewChatGPTClient(apiKey string) *ChatGPTClient {
+
 	return &ChatGPTClient{
 		ChatGPTAPIURL: "https://api.openai.com/v1/engines/text-davinci-003/completions",
 		APIKey:        apiKey,
@@ -44,7 +48,8 @@ func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 	}
 
 	// Create an HTTP client and set the API key in the header
-	client := &http.Client{}
+	client := Wrap(http.DefaultClient,
+		WithRateLimit())
 	req, err := http.NewRequest("POST", c.ChatGPTAPIURL, bytes.NewReader(requestBodyBytes))
 	if err != nil {
 		return false, err
@@ -68,7 +73,7 @@ func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 	if err := json.Unmarshal(responseBodyBytes, &chatGPTResponse); err != nil {
 		return false, err
 	}
-	fmt.Println(chatGPTResponse.Choices)
+	//fmt.Println(chatGPTResponse.Choices)
 	// Check if the response indicates a rejection email
 	if len(chatGPTResponse.Choices) == 0 {
 		// no response from API, but don't fail
