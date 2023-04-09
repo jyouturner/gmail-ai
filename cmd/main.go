@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"time"
@@ -20,7 +21,7 @@ func main() {
 				Name:  "label-rejection",
 				Usage: "label rejection emails",
 				Action: func(cCtx *cli.Context) error {
-					labelRejections(configFilePath)
+					labelRejections(context.Background(), configFilePath)
 					return nil
 				},
 			},
@@ -42,7 +43,7 @@ func main() {
 
 }
 
-func labelRejections(configFilePath string) {
+func labelRejections(ctx context.Context, configFilePath string) {
 	// Load the configuration file
 	config, err := automation.LoadConfig(configFilePath)
 	if err != nil {
@@ -57,6 +58,11 @@ func labelRejections(configFilePath string) {
 	// Create ChatGPT API client
 	chatGptClient := integration.NewChatGPTClient(config.ChatGPT.URL, config.ChatGPT.APIKey, integration.WithTimeout(time.Duration(config.ChatGPT.Timeout)*time.Second))
 
+	// crate the gmail handler
+	handler := automation.NewHandler(chatGptClient, gmailService)
 	// Process new emails
-	automation.ProcessNewEmails(gmailService, chatGptClient)
+	// Create a context with a timeout of 10 seconds
+	ctxTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	automation.ProcessNewEmails(ctxTimeout, gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
 }

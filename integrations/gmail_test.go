@@ -48,7 +48,7 @@ func TestCallWatch(t *testing.T) {
 	}
 }
 
-func TestGetHistories(t *testing.T) {
+func TestGetHistoryMessages(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
 	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
@@ -56,7 +56,12 @@ func TestGetHistories(t *testing.T) {
 		t.Errorf("error creating gmail service: %v", err)
 	}
 	fmt.Printf("gmailService: %v\n", gmailService)
-	messages, err := GetHistories(gmailService, "me", uint64(5991011))
+	profile, err := gmailService.Users.GetProfile("me").Do()
+	if err != nil {
+		t.Errorf("Unable to get user profile: %v", err)
+	}
+	lastHistoryId := profile.HistoryId
+	messages, err := GetHistorieMessages(gmailService, "me", lastHistoryId)
 	if err != nil {
 		t.Errorf("error getting histories: %v", err)
 	}
@@ -69,4 +74,24 @@ func TestGetHistories(t *testing.T) {
 		}
 	}
 
+}
+
+func TestGetHistoryList(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
+	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+
+	if err != nil {
+		t.Errorf("error creating gmail service: %v", err)
+	}
+	fmt.Printf("gmailService: %v\n", gmailService)
+	profile, err := gmailService.Users.GetProfile("me").Do()
+	if err != nil {
+		t.Errorf("Unable to get user profile: %v", err)
+	}
+	lastHistoryId := profile.HistoryId
+	history, err := GetHistoryList(gmailService, "me", lastHistoryId)
+	if err != nil {
+		t.Errorf("error getting histories: %v", err)
+	}
+	fmt.Printf("history: %v\n", history)
 }

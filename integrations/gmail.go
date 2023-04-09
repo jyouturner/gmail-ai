@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/option"
 )
 
+// CreateGmailService creates a new Gmail service
 func CreateGmailService(credsPath string, tokenPath string) (*gmail.Service, error) {
 	// Read OAuth 2.0 credentials from the JSON file
 	credsBytes, err := ioutil.ReadFile(credsPath)
@@ -97,6 +98,7 @@ func SetLabel(gmailService *gmail.Service, messageID, labelName string, markAsRe
 	return err
 }
 
+// CallWatch sets up a Gmail watch for the given topic
 func CallWatch(gmailService *gmail.Service, projectID string, topicName string) error {
 	// Replace these with your own values
 	userID := "me" // Use "me" to represent the authenticated user
@@ -116,12 +118,30 @@ func CallWatch(gmailService *gmail.Service, projectID string, topicName string) 
 	return nil
 }
 
-func GetHistories(gmailService *gmail.Service, userID string, startHistoryID uint64) ([]*gmail.Message, error) {
+// GetHistoriesList returns a list of history records that have changed since the last historyId
+func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId uint64) (*gmail.ListHistoryResponse, error) {
+	// If lastHistoryId is 0, perform a full sync
+	var history *gmail.ListHistoryResponse
+	if lastHistoryId == 0 {
+		profile, err := gmailService.Users.GetProfile(userID).Do()
+		if err != nil {
+			log.Fatalf("Unable to get user profile: %v", err)
+		}
+		lastHistoryId = profile.HistoryId
+	}
+	// List history records for messages that have changed since the last historyId
+	history, err := gmailService.Users.History.List(userID).StartHistoryId(lastHistoryId).Do()
+	if err != nil {
+		return history, fmt.Errorf("unable to retrieve history: %v", err)
+	}
+	return history, nil
+}
+
+// GetHistorieMessages returns a list of messages that have changed since the last historyId
+func GetHistorieMessages(gmailService *gmail.Service, userID string, startHistoryID uint64) ([]*gmail.Message, error) {
 	messages := []*gmail.Message{}
 	// Get Gmail history
-	historyListCall := gmailService.Users.History.List(userID)
-	historyListCall.StartHistoryId(startHistoryID)
-	historyList, err := historyListCall.Do()
+	historyList, err := GetHistoryList(gmailService, userID, startHistoryID)
 	if err != nil {
 		log.Fatalf("Failed to get Gmail history: %v", err)
 	}
