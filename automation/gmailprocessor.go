@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"sync"
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
 	"golang.org/x/time/rate"
@@ -38,7 +39,7 @@ func (r *RateLimiter) CallAPI() {
 }
 
 // Define a type for email handler functions
-type EmailHandlerFunc func(email *gmail.Message, ch chan<- error)
+type EmailHandlerFunc func(email *gmail.Message) error
 
 // ProcessNewEmails retrieves new emails and processes them
 func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
@@ -52,8 +53,8 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 	if err != nil {
 		return fmt.Errorf("unable to get histories %v", err)
 	}
-	// Create a channel to communicate errors from the email handler functions
-	errCh := make(chan error)
+	// Create a WaitGroup to wait for all email handler functions to complete
+	var wg sync.WaitGroup
 	// Process each message returned by the history API
 	for _, h := range histories.History {
 		for _, m := range h.Messages {
@@ -66,23 +67,29 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 
 			// Process the email content with each handler function to determine if it meets the criteria
 			for _, handler := range handlers {
-				go handler(msg, errCh)
+				wg.Add(1)
+				go func(h EmailHandlerFunc) {
+					defer wg.Done()
+					err := h(msg)
+					if err != nil {
+						fmt.Printf("error processing email %v: %v", msg.Id, err)
+					}
+				}(handler)
 			}
 
 			// Wait for all email handler functions to complete or for a context timeout
-			doneCh := make(chan struct{}, len(handlers))
-			for i := 0; i < len(handlers); i++ {
-				select {
-				case err := <-errCh:
-					if err != nil {
-						return fmt.Errorf("error processing email: %v", err)
-					}
-					doneCh <- struct{}{}
-				case <-ctx.Done():
-					return ctx.Err()
-				}
+			doneCh := make(chan struct{})
+			go func() {
+				defer close(doneCh)
+				wg.Wait()
+			}()
+
+			select {
+			case <-doneCh:
+				// All email handler functions have completed
+			case <-ctx.Done():
+				return ctx.Err()
 			}
-			close(doneCh)
 		}
 	}
 

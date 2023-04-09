@@ -22,24 +22,20 @@ func NewHandler(chatGPTClient *integration.ChatGPTClient, gmailService *gmail.Se
 }
 
 // Implement the HandleRejection method of the EmailHandlerFunc interface
-func (h *Handler) HandleRejection(msg *gmail.Message, ch chan<- error) {
+func (h *Handler) HandleRejection(msg *gmail.Message) error {
 	// Use ChatGPT to determine if the email is a rejection
 	isRejection, err := h.ChatGPTClient.IsRejectionEmail(msg.Snippet)
 	if err != nil {
-		ch <- fmt.Errorf("error while checking if email is a rejection: %v", err)
-		return
+		return fmt.Errorf("error while checking if email is a rejection: %v", err)
 	}
 
 	// If the email is a rejection, apply the specified label
 	if isRejection {
 		err := integration.SetLabel(h.GmailService, msg.Id, "Rejection", true, false)
 		if err != nil {
-			ch <- fmt.Errorf("error setting label on message %v: %v", msg.Id, err)
-			return
+			return fmt.Errorf("error setting label on message %v: %v", msg.Id, err)
 		}
 		fmt.Println("Rejection email found!")
 	}
-
-	// If there were no errors, send a nil error to the channel to indicate success
-	ch <- nil
+	return nil
 }
