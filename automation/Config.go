@@ -11,7 +11,9 @@ type Config struct {
 		Token       string `json:"token"`
 	} `json:"gmail"`
 	ChatGPT struct {
-		APIKey string `json:"api_key"`
+		URL     string `json:"url"`
+		APIKey  string `json:"api_key"`
+		Timeout int    `json:"timeout"`
 	} `json:"chatgpt"`
 }
 

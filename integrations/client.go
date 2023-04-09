@@ -56,6 +56,12 @@ func WithRateLimit() Option {
 	}
 }
 
+func WithTimeout(timeout time.Duration) Option {
+	return func(c *http.Client) {
+		c.Timeout = timeout
+	}
+}
+
 // Wrap the base client.
 func Wrap(base *http.Client, options ...Option) *http.Client {
 	if base == nil {

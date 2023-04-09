@@ -1,0 +1,12 @@
+{
+    "gmail": {
+      "credentials": "path_to_the_google_credential_json_file",
+      "token": "gmail_token.json"
+    },
+    "chatgpt": {
+      "url": "https://api.openai.com/v1/engines/text-davinci-003/completions",
+      "api_key": "chatgpt_api_key",
+      "timeout": 2
+    }
+  }
+  

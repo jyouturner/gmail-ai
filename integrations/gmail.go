@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"time"
 
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
@@ -28,7 +29,15 @@ func CreateGmailService(credsPath string, tokenPath string) (*gmail.Service, err
 	if err != nil {
 		token = RequestNewToken(config)
 		SaveTokenToJSON(tokenPath, token)
+	} else if token.Expiry.Before(time.Now()) {
+		tokenSource := config.TokenSource(context.Background(), token)
+		token, err = tokenSource.Token()
+		if err != nil {
+			log.Fatalf("Unable to refresh token: %v", err)
+		}
+		SaveTokenToJSON(tokenPath, token)
 	}
+
 	//mail API client
 	client := config.Client(context.Background(), token)
 

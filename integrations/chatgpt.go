@@ -7,21 +7,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"golang.org/x/time/rate"
 )
 
 type ChatGPTClient struct {
 	ChatGPTAPIURL string
 	APIKey        string
-	limiter       *rate.Limiter
+	client        *http.Client
 }
 
-func NewChatGPTClient(apiKey string) *ChatGPTClient {
-
+func NewChatGPTClient(url string, apiKey string, options ...Option) *ChatGPTClient {
+	// Create an HTTP client and set the API key in the header
+	client := Wrap(http.DefaultClient, options...)
 	return &ChatGPTClient{
-		ChatGPTAPIURL: "https://api.openai.com/v1/engines/text-davinci-003/completions",
+		ChatGPTAPIURL: url,
 		APIKey:        apiKey,
+		client:        client,
 	}
 }
 
@@ -47,9 +47,6 @@ func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 		return false, err
 	}
 
-	// Create an HTTP client and set the API key in the header
-	client := Wrap(http.DefaultClient,
-		WithRateLimit())
 	req, err := http.NewRequest("POST", c.ChatGPTAPIURL, bytes.NewReader(requestBodyBytes))
 	if err != nil {
 		return false, err
@@ -58,7 +55,7 @@ func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 	req.Header.Add("Content-Type", "application/json")
 
 	// Send the API request
-	resp, err := client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return false, err
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/jyouturer/gmail-ai/automation"
 	integration "github.com/jyouturer/gmail-ai/integrations"
@@ -54,7 +55,7 @@ func labelRejections(configFilePath string) {
 	}
 
 	// Create ChatGPT API client
-	chatGptClient := integration.NewChatGPTClient(config.ChatGPT.APIKey)
+	chatGptClient := integration.NewChatGPTClient(config.ChatGPT.URL, config.ChatGPT.APIKey, integration.WithTimeout(time.Duration(config.ChatGPT.Timeout)*time.Second))
 
 	// Process new emails
 	automation.ProcessNewEmails(gmailService, chatGptClient)

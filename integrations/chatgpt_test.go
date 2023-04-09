@@ -3,11 +3,12 @@ package integration
 import (
 	"os"
 	"testing"
+	"time"
 )
 
 func TestChatGPTAPI(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "CHATGPT_API_KEY")
-	chatgpt := NewChatGPTClient(os.Getenv("CHATGPT_API_KEY"))
+	chatgpt := NewChatGPTClient("https://api.openai.com/v1/engines/text-davinci-003/completions", os.Getenv("CHATGPT_API_KEY"), WithTimeout(1*time.Second))
 	rejected, err := chatgpt.IsRejectionEmail("Good")
 	if err != nil {
 		t.Errorf("error checking rejection email: %v", err)
@@ -33,7 +34,7 @@ func TestChatGPTAPIRejected(t *testing.T) {
 	GEICO Hiring Team
 	**Please do not reply to this message as it has been sent from an unmonitored account.** `
 	ignoreTestWithoutEnvironmentVariables(t, "CHATGPT_API_KEY")
-	chatgpt := NewChatGPTClient(os.Getenv("CHATGPT_API_KEY"))
+	chatgpt := NewChatGPTClient("https://api.openai.com/v1/engines/text-davinci-003/completions", os.Getenv("CHATGPT_API_KEY"), WithTimeout(1*time.Second))
 	rejected, err := chatgpt.IsRejectionEmail(email)
 	if err != nil {
 		t.Errorf("error checking rejection email: %v", err)
@@ -49,7 +50,7 @@ func TestChatGPTAPIRejected2(t *testing.T) {
  
 	Thank you again, we really appreciate you taking the time to consider us. `
 	ignoreTestWithoutEnvironmentVariables(t, "CHATGPT_API_KEY")
-	chatgpt := NewChatGPTClient(os.Getenv("CHATGPT_API_KEY"))
+	chatgpt := NewChatGPTClient("https://api.openai.com/v1/engines/text-davinci-003/completions", os.Getenv("CHATGPT_API_KEY"), WithTimeout(1*time.Second))
 	rejected, err := chatgpt.IsRejectionEmail(email)
 	if err != nil {
 		t.Errorf("error checking rejection email: %v", err)
