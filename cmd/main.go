@@ -21,8 +21,11 @@ func main() {
 				Name:  "label-rejection",
 				Usage: "label rejection emails",
 				Action: func(cCtx *cli.Context) error {
-					labelRejections(context.Background(), configFilePath)
-					return nil
+					for {
+						labelRejections(context.Background(), configFilePath)
+						time.Sleep(10 * time.Second)
+					}
+
 				},
 			},
 		},
