@@ -89,7 +89,7 @@ func TestGetHistoryList(t *testing.T) {
 		t.Errorf("Unable to get user profile: %v", err)
 	}
 	lastHistoryId := profile.HistoryId
-	history, err := GetHistoryList(gmailService, "me", lastHistoryId)
+	lastHistoryId, history, err := GetHistoryList(gmailService, "me", lastHistoryId)
 	if err != nil {
 		t.Errorf("error getting histories: %v", err)
 	}

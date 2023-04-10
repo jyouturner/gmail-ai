@@ -49,15 +49,19 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 		return fmt.Errorf("unable to read last historyId from file: %v", err)
 	}
 
-	histories, err := integration.GetHistoryList(gmailService, "me", lastHistoryId)
+	lastHistoryId, histories, err := integration.GetHistoryList(gmailService, "me", lastHistoryId)
 	if err != nil {
 		return fmt.Errorf("unable to get histories %v", err)
 	}
+	fmt.Println("History count:", len(histories.History))
 	// Create a WaitGroup to wait for all email handler functions to complete
 	var wg sync.WaitGroup
 	// Process each message returned by the history API
 	for _, h := range histories.History {
+		fmt.Println("History ID:", h.Id)
+		lastHistoryId = h.Id
 		for _, m := range h.Messages {
+			fmt.Println("Message ID:", m.Id)
 			// Retrieve only the message headers to limit the size of the response
 			msg, err := gmailService.Users.Messages.Get("me", m.Id).Format("full").Do()
 			if err != nil {

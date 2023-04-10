@@ -119,10 +119,11 @@ func CallWatch(gmailService *gmail.Service, projectID string, topicName string) 
 }
 
 // GetHistoriesList returns a list of history records that have changed since the last historyId
-func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId uint64) (*gmail.ListHistoryResponse, error) {
+func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId uint64) (uint64, *gmail.ListHistoryResponse, error) {
 	// If lastHistoryId is 0, perform a full sync
 	var history *gmail.ListHistoryResponse
 	if lastHistoryId == 0 {
+		fmt.Println("getting history for the first time from profie")
 		profile, err := gmailService.Users.GetProfile(userID).Do()
 		if err != nil {
 			log.Fatalf("Unable to get user profile: %v", err)
@@ -130,18 +131,19 @@ func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId ui
 		lastHistoryId = profile.HistoryId
 	}
 	// List history records for messages that have changed since the last historyId
+	fmt.Println("last history id", lastHistoryId)
 	history, err := gmailService.Users.History.List(userID).StartHistoryId(lastHistoryId).Do()
 	if err != nil {
-		return history, fmt.Errorf("unable to retrieve history: %v", err)
+		return lastHistoryId, history, fmt.Errorf("unable to retrieve history list: %v", err)
 	}
-	return history, nil
+	return lastHistoryId, history, nil
 }
 
 // GetHistorieMessages returns a list of messages that have changed since the last historyId
 func GetHistorieMessages(gmailService *gmail.Service, userID string, startHistoryID uint64) ([]*gmail.Message, error) {
 	messages := []*gmail.Message{}
 	// Get Gmail history
-	historyList, err := GetHistoryList(gmailService, userID, startHistoryID)
+	_, historyList, err := GetHistoryList(gmailService, userID, startHistoryID)
 	if err != nil {
 		log.Fatalf("Failed to get Gmail history: %v", err)
 	}
