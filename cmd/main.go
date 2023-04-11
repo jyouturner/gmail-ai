@@ -72,13 +72,15 @@ func labelRejections(ctx context.Context, configFilePath string) {
 		log.Fatalf("Error creating Gmail service: %v", err)
 	}
 
-	// Create the client to call gRPC of the rejection classifier
-	rejectionCheck, err := integration.NewRejectionCheck(config.RejectionCheck.URL)
+	// Create a connection pool with 10 RejectionCheck objects
+	cp, err := integration.NewConnectionPool(config.RejectionCheck.URL, 10, time.Second*10)
 	if err != nil {
-		logging.Logger.Fatal("Error creating rejection classifier client", zap.Error(err))
+		log.Fatalf("Error creating connection pool: %v", err)
 	}
+	defer cp.Close()
 	// crate the gmail handler
-	handler := automation.NewHandler(rejectionCheck, gmailService)
+	handler := automation.NewHandler(cp, gmailService)
+
 	// Process new emails
 	// Create a context with a timeout of 10 seconds
 	ctxTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)

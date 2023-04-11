@@ -10,14 +10,15 @@ import (
 
 // define a handler
 type Handler struct {
-	RejectionClassfier *integration.RejectionCheck
+	RejectionCheckPool *integration.ConnectionPool
 	GmailService       *gmail.Service
 }
 
 // NewHandler creates a new Handler
-func NewHandler(rejectionCheck *integration.RejectionCheck, gmailService *gmail.Service) *Handler {
+func NewHandler(cp *integration.ConnectionPool, gmailService *gmail.Service) *Handler {
+	// Create the client to call gRPC of the rejection classifier
 	return &Handler{
-		RejectionClassfier: rejectionCheck,
+		RejectionCheckPool: cp,
 		GmailService:       gmailService,
 	}
 }
@@ -32,7 +33,13 @@ func (h *Handler) HandleRejection(ctx context.Context, msg *gmail.Message) error
 	if text == "" {
 		return fmt.Errorf("empty message %v", msg.Id)
 	}
-	isRejection := h.RejectionClassfier.IsRejection(ctx, text)
+	rc, err := h.RejectionCheckPool.GetRejectionCheck()
+	if err != nil {
+		return fmt.Errorf("failed to get rejection check from pool %v", err)
+	}
+	defer h.RejectionCheckPool.ReturnRejectionCheck(rc)
+
+	isRejection := rc.IsRejection(ctx, text)
 
 	// If the email is a rejection, apply the specified label
 	if isRejection {
