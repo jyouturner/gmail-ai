@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
+	"github.com/jyouturer/gmail-ai/internal"
 	"golang.org/x/time/rate"
 	"google.golang.org/api/gmail/v1"
 )
@@ -43,6 +44,9 @@ type EmailHandlerFunc func(ctx context.Context, email *gmail.Message) error
 
 // ProcessNewEmails retrieves new emails and processes them
 func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
+
+	processedMessages := internal.NewRingBuffer(100)
+
 	// Read the last historyId from the file
 	lastHistoryId, err := readHistoryId(historyFile)
 	if err != nil {
@@ -61,6 +65,13 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 		fmt.Println("History ID:", h.Id)
 		lastHistoryId = h.Id
 		for _, m := range h.MessagesAdded {
+			// Check if the message has already been processed
+			messageID := m.Message.Id
+			if processedMessages.Contains(messageID) {
+				fmt.Printf("Message %s has already been processed, skipping...\n", m.Message.Id)
+				continue
+			}
+
 			fmt.Print("Message ID:", m.Message.Id)
 			// Retrieve only the message headers to limit the size of the response
 			msg, err := gmailService.Users.Messages.Get("me", m.Message.Id).Format("full").Do()
@@ -91,6 +102,8 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 			select {
 			case <-doneCh:
 				// All email handler functions have completed
+				// Mark the message as processed in the ring buffer
+				processedMessages.Put(messageID)
 			case <-ctx.Done():
 				return ctx.Err()
 			}
