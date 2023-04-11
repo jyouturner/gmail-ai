@@ -3,11 +3,32 @@ package integration
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/jyouturer/gmail-ai/internal/logging"
 )
 
+func TestMain(m *testing.M) {
+	// Set up the logger for testing
+	logger, err := logging.NewLogger()
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	logging.Logger = logger
+
+	// Run the tests
+	code := m.Run()
+
+	// Clean up any resources here
+
+	os.Exit(code)
+}
+
 func TestRejection(t *testing.T) {
+	//packagetest.TestMain(nil)
 	// Create a connection pool with 10 RejectionCheck objects
 	cp, err := NewConnectionPool("localhost:50051", 2, time.Second*10)
 	if err != nil {
