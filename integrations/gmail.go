@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -161,4 +162,48 @@ func GetHistorieMessages(gmailService *gmail.Service, userID string, startHistor
 		}
 	}
 	return messages, nil
+}
+
+func GetMessage(msg *gmail.Message) (string, error) {
+	// Parse the message payload to get the text content
+	payload := msg.Payload
+	if payload != nil {
+		// Check if the message is a multipart message
+		if len(payload.Parts) > 0 {
+			for _, part := range payload.Parts {
+				// Check if the part is a text/plain or text/html part
+				if part.MimeType == "text/plain" || part.MimeType == "text/html" {
+					// Decode the part body to get the text content
+					partBytes, err := base64.URLEncoding.DecodeString(part.Body.Data)
+					if err != nil {
+						return "", err
+					}
+					text := string(partBytes)
+					// Do something with the message text
+					return text, nil
+				} else {
+					fmt.Println("Multipart Message is not plain text", part.MimeType)
+
+				}
+			}
+		} else {
+			// If the message is not a multipart message, it may be a plain text message
+			// with no MIME type specified
+			if payload.MimeType == "text/plain" || payload.MimeType == "text/html" {
+				// Decode the message body to get the text content
+				bodyBytes, err := base64.URLEncoding.DecodeString(payload.Body.Data)
+				if err != nil {
+					// Handle error
+					return "", err
+				}
+				text := string(bodyBytes)
+				// Do something with the message text
+				return text, nil
+			} else {
+				fmt.Println("Message is not plain text", payload.MimeType)
+				return "", nil
+			}
+		}
+	}
+	return "", nil
 }

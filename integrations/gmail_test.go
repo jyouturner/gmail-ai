@@ -104,11 +104,16 @@ func TestGmailGetMessageById(t *testing.T) {
 		t.Errorf("error creating gmail service: %v", err)
 	}
 	fmt.Printf("gmailService: %v\n", gmailService)
-	messageID := "187703209d411b72"
+	messageID := "187707239af927a0"
 	msg, err := gmailService.Users.Messages.Get("me", messageID).Format("full").Do()
 	if err != nil {
 		t.Errorf("unable to retrieve message %v: %v\n", messageID, err)
 	}
-	fmt.Printf("msg: %v\n", msg)
+	fmt.Printf("msg snippet: %v\n", msg.Snippet)
+	text, err := GetMessage(msg)
+	if err != nil {
+		t.Errorf("unable to parse message %v: %v\n", messageID, err)
+	}
+	fmt.Printf("msg: %v\n", text)
 
 }

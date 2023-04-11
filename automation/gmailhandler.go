@@ -25,7 +25,14 @@ func NewHandler(rejectionCheck *integration.RejectionCheck, gmailService *gmail.
 // Implement the HandleRejection method of the EmailHandlerFunc interface
 func (h *Handler) HandleRejection(ctx context.Context, msg *gmail.Message) error {
 	// Use ChatGPT to determine if the email is a rejection
-	isRejection := h.RejectionClassfier.IsRejection(ctx, msg.Snippet)
+	text, err := integration.GetMessage(msg)
+	if err != nil {
+		return fmt.Errorf("unable to parse message %v: %v", msg.Id, err)
+	}
+	if text == "" {
+		return fmt.Errorf("empty message %v", msg.Id)
+	}
+	isRejection := h.RejectionClassfier.IsRejection(ctx, text)
 
 	// If the email is a rejection, apply the specified label
 	if isRejection {
