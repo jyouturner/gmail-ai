@@ -59,6 +59,7 @@ func main() {
 
 }
 
+// labelRejections labels rejection emails
 func labelRejections(ctx context.Context, configFilePath string) {
 	// Load the configuration file
 	config, err := automation.LoadConfig(configFilePath)
@@ -72,7 +73,10 @@ func labelRejections(ctx context.Context, configFilePath string) {
 	}
 
 	// Create the client to call gRPC of the rejection classifier
-	rejectionCheck := integration.NewRejectionCheck(config.RejectionCheck.URL)
+	rejectionCheck, err := integration.NewRejectionCheck(config.RejectionCheck.URL)
+	if err != nil {
+		logging.Logger.Fatal("Error creating rejection classifier client", zap.Error(err))
+	}
 	// crate the gmail handler
 	handler := automation.NewHandler(rejectionCheck, gmailService)
 	// Process new emails

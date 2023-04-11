@@ -9,23 +9,24 @@ import (
 )
 
 type RejectionCheck struct {
-	url string
+	url        string
+	connection *grpc.ClientConn
 }
 
-func NewRejectionCheck(url string) *RejectionCheck {
-	return &RejectionCheck{
-		url: url,
+func NewRejectionCheck(url string) (*RejectionCheck, error) {
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
+	if err != nil {
+		return nil, fmt.Errorf("failed to dial gRPC server: %v", err)
 	}
+
+	return &RejectionCheck{
+		url:        url,
+		connection: conn,
+	}, nil
 }
 
 func (c *RejectionCheck) IsRejection(ctx context.Context, text string) bool {
-	conn, err := grpc.Dial(c.url, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-
-	client := NewClassifierClient(conn)
+	client := NewClassifierClient(c.connection)
 
 	response, err := client.ClassifyEmail(ctx, &ClassifyRequest{EmailText: text})
 	if err != nil {
@@ -35,4 +36,11 @@ func (c *RejectionCheck) IsRejection(ctx context.Context, text string) bool {
 	fmt.Printf("Is rejection email: %v\n", response.IsRejection)
 
 	return response.IsRejection
+}
+
+func (c *RejectionCheck) Close() error {
+	if c.connection != nil {
+		return c.connection.Close()
+	}
+	return nil
 }

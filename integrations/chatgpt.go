@@ -9,12 +9,14 @@ import (
 	"strings"
 )
 
+// ChatGPTClient is a client for the ChatGPT API
 type ChatGPTClient struct {
 	ChatGPTAPIURL string
 	APIKey        string
 	client        *http.Client
 }
 
+// NewChatGPTClient creates a new ChatGPT client
 func NewChatGPTClient(url string, apiKey string, options ...Option) *ChatGPTClient {
 	// Create an HTTP client and set the API key in the header
 	client := Wrap(http.DefaultClient, options...)
@@ -36,6 +38,7 @@ type ChatGPTResponse struct {
 	} `json:"choices"`
 }
 
+// IsRejectionEmail returns true if the given email content is a rejection email
 func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 	// Prepare the API request
 	requestBody := &ChatGPTRequest{

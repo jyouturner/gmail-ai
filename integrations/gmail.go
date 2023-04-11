@@ -164,6 +164,7 @@ func GetHistorieMessages(gmailService *gmail.Service, userID string, startHistor
 	return messages, nil
 }
 
+// GetMessage returns the text content of the given message
 func GetMessage(msg *gmail.Message) (string, error) {
 	// Parse the message payload to get the text content
 	payload := msg.Payload
