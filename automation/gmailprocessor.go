@@ -10,34 +10,10 @@ import (
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
 	"github.com/jyouturer/gmail-ai/internal"
-	"golang.org/x/time/rate"
+	"github.com/jyouturer/gmail-ai/internal/logging"
+	"go.uber.org/zap"
 	"google.golang.org/api/gmail/v1"
 )
-
-type RateLimiter struct {
-	limiter  *rate.Limiter
-	requests int
-}
-
-func NewRateLimiter(r rate.Limit, b int, requests int) *RateLimiter {
-	return &RateLimiter{
-		limiter:  rate.NewLimiter(r, b),
-		requests: requests,
-	}
-}
-
-func (r *RateLimiter) CallAPI() {
-	for i := 0; i < r.requests; i++ {
-		err := r.limiter.Wait(context.Background())
-		if err != nil {
-			fmt.Println("Rate limit error:", err)
-			return
-		}
-
-		// Make your API call here
-		fmt.Println("API request:", i+1)
-	}
-}
 
 // Define a type for email handler functions
 type EmailHandlerFunc func(ctx context.Context, email *gmail.Message) error
@@ -57,28 +33,30 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 	if err != nil {
 		return fmt.Errorf("unable to get histories %v", err)
 	}
-	fmt.Println("History count:", len(histories.History))
+	logging.Logger.Debug("History:", zap.Int("count", len(histories.History)))
 	// Create a WaitGroup to wait for all email handler functions to complete
 	var wg sync.WaitGroup
 	// Process each message returned by the history API
 	for _, h := range histories.History {
-		fmt.Println("History ID:", h.Id)
+		logging.Logger.Debug("History", zap.Uint64("id", h.Id))
 		lastHistoryId = h.Id
 		for _, m := range h.MessagesAdded {
 			// Check if the message has already been processed
 			messageID := m.Message.Id
 			if processedMessages.Contains(messageID) {
-				fmt.Printf("Message %s has already been processed, skipping...\n", m.Message.Id)
+				logging.Logger.Info("Message has already been processed, skipping...\n", zap.String("message", messageID))
 				continue
 			}
 
-			fmt.Print("Message ID:", m.Message.Id)
+			logging.Logger.Info("Message", zap.String("message", messageID))
 			// Retrieve only the message headers to limit the size of the response
-			msg, err := gmailService.Users.Messages.Get("me", m.Message.Id).Format("full").Do()
+			msg, err := gmailService.Users.Messages.Get("me", messageID).Format("full").Do()
 			if err != nil {
-				return fmt.Errorf("unable to retrieve message %v: %v", m.Message.Id, err)
+				logging.Logger.Error("unable to retrieve message", zap.String("message", messageID), zap.Error(err))
+				continue
 			}
-			fmt.Println(msg.Snippet)
+			snippet := msg.Snippet
+			logging.Logger.Info(snippet)
 
 			// Process the email content with each handler function to determine if it meets the criteria
 			for _, handler := range handlers {
@@ -87,7 +65,7 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 					defer wg.Done()
 					err := h(ctx, msg)
 					if err != nil {
-						fmt.Printf("error processing email %v: %v", msg.Id, err)
+						logging.Logger.Error("error processing email", zap.String("message", messageID), zap.Error(err))
 					}
 				}(handler)
 			}
@@ -113,6 +91,7 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 	// Write the updated lastHistoryId to the file
 	err = writeHistoryId(historyFile, lastHistoryId)
 	if err != nil {
+		logging.Logger.Error("error saving history file", zap.String("historyFile", historyFile), zap.Error(err))
 		return fmt.Errorf("unable to write last historyId to file: %v", err)
 	}
 	return nil

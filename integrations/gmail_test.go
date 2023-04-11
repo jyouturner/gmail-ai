@@ -95,3 +95,20 @@ func TestGetHistoryList(t *testing.T) {
 	}
 	fmt.Printf("history: %v\n", history)
 }
+
+func TestGmailGetMessageById(t *testing.T) {
+	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
+	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+
+	if err != nil {
+		t.Errorf("error creating gmail service: %v", err)
+	}
+	fmt.Printf("gmailService: %v\n", gmailService)
+	messageID := "187703209d411b72"
+	msg, err := gmailService.Users.Messages.Get("me", messageID).Format("full").Do()
+	if err != nil {
+		t.Errorf("unable to retrieve message %v: %v\n", messageID, err)
+	}
+	fmt.Printf("msg: %v\n", msg)
+
+}

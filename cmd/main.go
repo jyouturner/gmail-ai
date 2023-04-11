@@ -8,10 +8,23 @@ import (
 
 	"github.com/jyouturer/gmail-ai/automation"
 	integration "github.com/jyouturer/gmail-ai/integrations"
+	"github.com/jyouturer/gmail-ai/internal/logging"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
+func init() {
+	logger, err := logging.NewLogger()
+	if err != nil {
+		panic(err)
+	}
+	logging.Logger = logger // Set the global logger instance
+}
+
 func main() {
+
+	defer logging.Logger.Sync()
+
 	var configFilePath string
 	app := &cli.App{
 		Name:  "gmail-ai",
@@ -41,7 +54,7 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		logging.Logger.Fatal("Error loading app", zap.Error(err))
 	}
 
 }
@@ -50,7 +63,7 @@ func labelRejections(ctx context.Context, configFilePath string) {
 	// Load the configuration file
 	config, err := automation.LoadConfig(configFilePath)
 	if err != nil {
-		log.Fatalf("Error loading config file: %v", err)
+		logging.Logger.Fatal("Error loading config file", zap.Error(err))
 	}
 
 	gmailService, err := integration.CreateGmailService(config.Gmail.Credentials, config.Gmail.Token)
