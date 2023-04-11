@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package classifier;
+
+service Classifier {
+  rpc ClassifyEmail (ClassifyRequest) returns (ClassifyResponse);
+}
+
+message ClassifyRequest {
+  string email_text = 1;
+}
+
+message ClassifyResponse {
+  bool is_rejection = 1;
+}

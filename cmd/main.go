@@ -58,11 +58,10 @@ func labelRejections(ctx context.Context, configFilePath string) {
 		log.Fatalf("Error creating Gmail service: %v", err)
 	}
 
-	// Create ChatGPT API client
-	chatGptClient := integration.NewChatGPTClient(config.ChatGPT.URL, config.ChatGPT.APIKey, integration.WithTimeout(time.Duration(config.ChatGPT.Timeout)*time.Second))
-
+	// Create the client to call gRPC of the rejection classifier
+	rejectionCheck := integration.NewRejectionCheck(config.RejectionCheck.URL)
 	// crate the gmail handler
-	handler := automation.NewHandler(chatGptClient, gmailService)
+	handler := automation.NewHandler(rejectionCheck, gmailService)
 	// Process new emails
 	// Create a context with a timeout of 10 seconds
 	ctxTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)

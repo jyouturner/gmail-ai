@@ -39,7 +39,7 @@ func (r *RateLimiter) CallAPI() {
 }
 
 // Define a type for email handler functions
-type EmailHandlerFunc func(email *gmail.Message) error
+type EmailHandlerFunc func(ctx context.Context, email *gmail.Message) error
 
 // ProcessNewEmails retrieves new emails and processes them
 func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
@@ -60,12 +60,12 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 	for _, h := range histories.History {
 		fmt.Println("History ID:", h.Id)
 		lastHistoryId = h.Id
-		for _, m := range h.Messages {
-			fmt.Println("Message ID:", m.Id)
+		for _, m := range h.MessagesAdded {
+			fmt.Print("Message ID:", m.Message.Id)
 			// Retrieve only the message headers to limit the size of the response
-			msg, err := gmailService.Users.Messages.Get("me", m.Id).Format("full").Do()
+			msg, err := gmailService.Users.Messages.Get("me", m.Message.Id).Format("full").Do()
 			if err != nil {
-				return fmt.Errorf("unable to retrieve message %v: %v", m.Id, err)
+				return fmt.Errorf("unable to retrieve message %v: %v", m.Message.Id, err)
 			}
 			fmt.Println(msg.Snippet)
 
@@ -74,7 +74,7 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 				wg.Add(1)
 				go func(h EmailHandlerFunc) {
 					defer wg.Done()
-					err := h(msg)
+					err := h(ctx, msg)
 					if err != nil {
 						fmt.Printf("error processing email %v: %v", msg.Id, err)
 					}

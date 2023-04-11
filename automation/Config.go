@@ -10,11 +10,9 @@ type Config struct {
 		Credentials string `json:"credentials"`
 		Token       string `json:"token"`
 	} `json:"gmail"`
-	ChatGPT struct {
-		URL     string `json:"url"`
-		APIKey  string `json:"api_key"`
-		Timeout int    `json:"timeout"`
-	} `json:"chatgpt"`
+	RejectionCheck struct {
+		URL string `json:"url"`
+	} `json:"rejectionCheck"`
 }
 
 func LoadConfig(path string) (*Config, error) {
