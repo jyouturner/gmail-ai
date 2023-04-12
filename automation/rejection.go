@@ -1,4 +1,4 @@
-package integration
+package automation
 
 import (
 	"context"
@@ -7,13 +7,14 @@ import (
 	sync "sync"
 	"time"
 
+	integration "github.com/jyouturer/gmail-ai/integrations"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type RejectionCheck struct {
-	client ClassifierClient
+	client integration.ClassifierClient
 }
 
 type ConnectionPool struct {
@@ -34,7 +35,7 @@ func NewConnectionPool(address string, size int, timeout time.Duration) (*Connec
 			return nil, err
 		}
 
-		client := NewClassifierClient(conn)
+		client := integration.NewClassifierClient(conn)
 
 		rc := &RejectionCheck{
 			client: client,
@@ -87,7 +88,7 @@ func (cp *ConnectionPool) Close() {
 }
 
 func (rc *RejectionCheck) IsRejection(ctx context.Context, text string) bool {
-	req := &ClassifyRequest{
+	req := &integration.ClassifyRequest{
 		EmailText: text,
 	}
 

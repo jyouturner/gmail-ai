@@ -11,12 +11,12 @@ import (
 
 // define a handler
 type Handler struct {
-	RejectionCheckPool *integration.ConnectionPool
+	RejectionCheckPool *ConnectionPool
 	GmailService       *gmail.Service
 }
 
 // NewHandler creates a new Handler
-func NewHandler(cp *integration.ConnectionPool, gmailService *gmail.Service) *Handler {
+func NewHandler(cp *ConnectionPool, gmailService *gmail.Service) *Handler {
 	// Create the client to call gRPC of the rejection classifier
 	return &Handler{
 		RejectionCheckPool: cp,

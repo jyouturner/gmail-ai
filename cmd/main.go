@@ -70,7 +70,7 @@ func labelRejections(ctx context.Context, configFilePath string) {
 	}
 
 	// Create a connection pool with 10 RejectionCheck objects
-	cp, err := integration.NewConnectionPool(config.RejectionCheck.URL, 10, time.Second*10)
+	cp, err := automation.NewConnectionPool(config.RejectionCheck.URL, 10, time.Second*10)
 	if err != nil {
 		log.Fatalf("Error creating connection pool: %v", err)
 	}
