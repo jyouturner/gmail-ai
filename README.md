@@ -42,19 +42,21 @@ and send to ML service to check.
 ## Project Structure
 
   ---
-    classifier
+    classifier (the Python ML service)
         Python machine learning code
         proto file
         gRPC service
         http web service
     cmd
         main
+    automation (the business logic)
+        Config
+        gmail handler including the rejection check
     integrations
         code to integrate with Gmail, ChatGPT etc
     internal
       logging
-      nlp
-        NLP code to extract top sentences from email body
+      NLP code to extract top sentences from email body
       
 
 ## Install
