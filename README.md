@@ -18,15 +18,26 @@ In this project, we utilize natural language processing (NLP) to extract the thr
 One-Class SVM is an unsupervised learning algorithm that learns the decision boundary for the normal class ("no_reject"). We can then use this decision boundary to determine if a given email is a rejection email or not. Scikit-learn provides an implementation of One-Class SVM that we can use.
 
 ```
-Initially, I utilized ChatGPT to identify rejection emails, which worked well. However, privacy and security concerns led me to create a locally-running machine learning utility instead. I attempted to use PyTorch and trained a model with a CSV file, but the results were not satisfactory, possibly due to the training data.
+Initially, I utilized ChatGPT to identify rejection emails, which worked well. However, privacy 
+and security concerns led me to create a locally-running machine learning utility instead. I 
+attempted to use PyTorch and trained a model with a CSV file, but the results were not satisfactory, 
+possibly due to the training data.
 
-Since machine learning is frequently implemented in Python, we employed gRPC for inter-service communication to facilitate this process.
+Since machine learning is frequently implemented in Python, we employed gRPC for inter-service 
+communication to facilitate this process.
 ```
 
 ### Natural Language Process
 
 We use natural language processing (NLP) to extract the relevant text from the message body. NLP can help you identify and extract the most important information from the message, such as the reason for rejection or the specific language used to convey the rejection. In our project we use the github.com/jdkato/prose module.
 
+```
+Because we train the model with simple text like "We appreciate all the time and energy you
+invested in your application. Unfortunately, we have decided to move forward with different 
+candidates at this time. ", we can not use the full email text body. Gmail API does provide 
+Snippet which sometimes is not enough, so I decided to use NLP to extract the important sentences
+and send to ML service to check.
+```
 
 ## Project Structure
 
