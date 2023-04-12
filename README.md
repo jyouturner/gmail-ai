@@ -10,7 +10,7 @@ This Go project is intended to run at your local, polling gmail messages, and do
 flowchart LR
     subgraph Go CLI
         A[Read Configuration File]
-        B[Poll Gmail API every 10 seconds]
+        B[Poll Gmail API]
         C[Extract Sentences from Email Body]
         D[Handlers]
     end
@@ -33,6 +33,7 @@ flowchart LR
     E --> G
     G --> H
     I --> H
+
 
 ````
 
