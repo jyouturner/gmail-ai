@@ -34,11 +34,8 @@ func main() {
 				Name:  "label-rejection",
 				Usage: "label rejection emails",
 				Action: func(cCtx *cli.Context) error {
-					for {
-						labelRejections(context.Background(), configFilePath)
-						time.Sleep(10 * time.Second)
-					}
-
+					labelRejections(context.Background(), configFilePath)
+					return nil
 				},
 			},
 		},
@@ -85,5 +82,8 @@ func labelRejections(ctx context.Context, configFilePath string) {
 	// Create a context with a timeout of 10 seconds
 	ctxTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	automation.ProcessNewEmails(ctxTimeout, gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
+	for {
+		automation.ProcessNewEmails(ctxTimeout, gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
+		time.Sleep(10 * time.Second)
+	}
 }
