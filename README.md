@@ -10,23 +10,30 @@ This Go project is intended to run at your local, polling gmail messages, and do
 flowchart LR
     subgraph Go CLI
         A[Read Configuration File]
-        B[Poll Gmail API]
+        B[Poll Gmail API every 10 seconds]
         C[Extract Sentences from Email Body]
-        D[Call gRPC Service]
+        D[Handlers]
+    end
+    subgraph Handlers
+        E[Rejection Check]
+        F[Other Handlers]
     end
     subgraph gRPC Service
-        E[Receive Email Data]
-        F[Check for Rejection with One-Class SVM]
+        G[Receive Email Data]
+        H[Check for Rejection with One-Class SVM]
     end
     subgraph Python Program
-        G[Train One-Class SVM Model]
+        I[Train One-Class SVM Model]
     end
     A --> B
     B --> C
     C --> D
+    D --> E
     D --> F
-    E --> F
-    G --> F
+    E --> G
+    G --> H
+    I --> H
+
 ````
 
 ### use case 1 - label "Rejection" emails
