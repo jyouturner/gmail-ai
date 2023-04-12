@@ -17,9 +17,11 @@ In this project, we utilize natural language processing (NLP) to extract the thr
 
 One-Class SVM is an unsupervised learning algorithm that learns the decision boundary for the normal class ("no_reject"). We can then use this decision boundary to determine if a given email is a rejection email or not. Scikit-learn provides an implementation of One-Class SVM that we can use.
 
-`Initially, I utilized ChatGPT to identify rejection emails, which worked well. However, privacy and security concerns led me to create a locally-running machine learning utility instead. I attempted to use PyTorch and trained a model with a CSV file, but the results were not satisfactory, possibly due to the training data.
+```
+Initially, I utilized ChatGPT to identify rejection emails, which worked well. However, privacy and security concerns led me to create a locally-running machine learning utility instead. I attempted to use PyTorch and trained a model with a CSV file, but the results were not satisfactory, possibly due to the training data.
 
-Since machine learning is frequently implemented in Python, we employed gRPC for inter-service communication to facilitate this process.`
+Since machine learning is frequently implemented in Python, we employed gRPC for inter-service communication to facilitate this process.
+```
 
 ### Natural Language Process
 
