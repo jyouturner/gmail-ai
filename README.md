@@ -4,11 +4,37 @@
 
 This Go project is intended to run at your local, polling gmail messages, and do something (intelligent) to them.
 
+### Architecture
+
+````mermaid
+flowchart LR
+    subgraph Go CLI
+        A[Read Configuration File]
+        B[Poll Gmail API]
+        C[Extract Sentences from Email Body]
+        D[Call gRPC Service]
+    end
+    subgraph gRPC Service
+        E[Receive Email Data]
+        F[Check for Rejection with One-Class SVM]
+    end
+    subgraph Python Program
+        G[Train One-Class SVM Model]
+    end
+    A --> B
+    B --> C
+    C --> D
+    D --> F
+    E --> F
+    G --> F
+````
+
 ### use case 1 - label "Rejection" emails
 
 Imagine you're searching for a job, and despite your exceptional qualifications, you receive numerous rejection emails in response to your applications. These automated messages hold no value for you, and you don't even want to spend time reading them! Let's employ a machine learning model to identify and eliminate them.
 
 In this project, we utilize natural language processing (NLP) to extract the three most important sentences from the email body. Then, we invoke a local Python gRPC service to determine if the message is a rejection or not. For this task, the Python gRPC service employs a machine learning technique called One-Class SVM.
+
 
 ## Machine Learning with Help from ChatGPT
 
