@@ -11,7 +11,7 @@ flowchart LR
     subgraph Go CLI
         A[Read Configuration File]
         B[Poll Gmail API]
-        C[Extract Sentences from Email Body]
+        C[Extract Sentences]
         D[Handlers]
     end
     subgraph Handlers
@@ -20,10 +20,10 @@ flowchart LR
     end
     subgraph gRPC Service
         G[Receive Email Data]
-        H[Check for Rejection with One-Class SVM]
+        H[Check Rejection]
     end
     subgraph Python Program
-        I[Train One-Class SVM Model]
+        I[Train SVM Model]
     end
     A --> B
     B --> C
