@@ -1,4 +1,4 @@
-package root
+package config
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ type Config struct {
 	} `json:"grpcService"`
 }
 
-func LoadConfig(path string) (*Config, error) {
+func NewConfigFromFile(path string) (*Config, error) {
 	configBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err

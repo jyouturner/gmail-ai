@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	root "github.com/jyouturer/gmail-ai"
 	"github.com/jyouturer/gmail-ai/automation"
+	config "github.com/jyouturer/gmail-ai/config"
 	integration "github.com/jyouturer/gmail-ai/integrations"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"github.com/jyouturer/gmail-ai/process"
@@ -61,7 +61,7 @@ func main() {
 // poll polls new emails and processes them
 func poll(configFilePath string) {
 	// Load the configuration file
-	config, err := root.LoadConfig(configFilePath)
+	config, err := config.NewConfigFromFile(configFilePath)
 	if err != nil {
 		logging.Logger.Fatal("Error loading config file", zap.Error(err))
 	}
