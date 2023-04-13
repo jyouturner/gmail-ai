@@ -68,19 +68,22 @@ func poll(configFilePath string) {
 	if err != nil {
 		log.Fatalf("Error creating Gmail service: %v", err)
 	}
-
-	// Create a connection pool with 10 grpc connection objects
-	cp, err := integration.NewConnectionPool(config.GRPCService.URL, 10, time.Second*10)
+	// create process to handle rejection email
+	rc, closeFunc, err := automation.NewRejectionChecker(config.GRPCService.URL, 10, 10)
 	if err != nil {
-		log.Fatalf("Error creating connection pool: %v", err)
+		logging.Logger.Fatal("Error creating Rejection Checker", zap.Error(err))
 	}
-	defer cp.Close()
+	defer closeFunc()
 	// crate the gmail handler
-	handler := automation.NewHandler(cp, gmailService)
+	hc := automation.NewRejectionEmail(gmailService, rc)
+
+	handlers := []automation.EmailHandlerFunc{
+		hc.Process,
+	}
 
 	// Process new emails
 	for {
-		automation.ProcessNewEmails(context.Background(), gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
+		automation.ProcessNewEmails(context.Background(), gmailService, "history.txt", handlers)
 		time.Sleep(60 * time.Second)
 	}
 }

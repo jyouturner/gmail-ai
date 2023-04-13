@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jyouturer/gmail-ai/internal/logging"
@@ -166,24 +167,61 @@ func GetHistorieMessages(gmailService *gmail.Service, userID string, startHistor
 	return messages, nil
 }
 
-// GetMessage returns the text content of the given message
-func GetMessage(msg *gmail.Message) (string, error) {
+// GetMessageCriticalContents returns the text content of the given message
+func GetMessageCriticalContents(msg *gmail.Message) (string, error) {
+	logging.Logger.Debug("GetMessage", zap.String("message", fmt.Sprintf("%+v", msg)))
 	// Parse the message payload to get the text content
 	payload := msg.Payload
 	if payload != nil {
 		// Check if the message is a multipart message
 		if len(payload.Parts) > 0 {
-			for _, part := range payload.Parts {
+			logging.Logger.Debug("Multipart Message", zap.Int("Parts", len(payload.Parts)))
+			for i, part := range payload.Parts {
+
 				// Check if the part is a text/plain or text/html part
+				logging.Logger.Debug("Multipart Message", zap.Int("Part", i), zap.String("mimetype", part.MimeType))
 				if part.MimeType == "text/plain" || part.MimeType == "text/html" {
 					// Decode the part body to get the text content
+
 					partBytes, err := base64.URLEncoding.DecodeString(part.Body.Data)
 					if err != nil {
 						return "", err
 					}
 					text := string(partBytes)
+					logging.Logger.Debug("Multipart Message is plain text or html", zap.String("text", text))
 					// Do something with the message text
 					return text, nil
+				} else if part.MimeType == "multipart/related" {
+					// Loop through each part of the multipart/related body
+					for _, subPart := range part.Parts {
+						// Loop through each header in the part
+						var contentType, contentDisposition string
+						for _, header := range subPart.Headers {
+							// Check if the header is the Content-Type header
+							logging.Logger.Debug("header", zap.String("name", header.Name), zap.String("value", header.Value))
+							if header.Name == "Content-Type" {
+								// Get the content type of the part
+								contentType = header.Value
+							}
+
+							// Check if the header is the Content-Disposition header
+							if header.Name == "Content-Disposition" {
+								// Get the content disposition of the part
+								contentDisposition = header.Value
+							}
+						}
+
+						// Check if the part contains the data you're looking for
+						if strings.HasPrefix(contentType, "image/") && strings.Contains(contentDisposition, "attachment") {
+							// Extract the data from the part
+							data, err := base64.URLEncoding.DecodeString(subPart.Body.Data)
+							if err != nil {
+								return "", err
+							}
+							return string(data), nil
+						}
+					}
+
 				} else {
 					logging.Logger.Info("Multipart Message is not plain text", zap.String("mimetype", part.MimeType))
 

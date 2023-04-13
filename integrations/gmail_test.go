@@ -110,7 +110,7 @@ func TestGmailGetMessageById(t *testing.T) {
 		t.Errorf("unable to retrieve message %v: %v\n", messageID, err)
 	}
 	fmt.Printf("msg snippet: %v\n", msg.Snippet)
-	text, err := GetMessage(msg)
+	text, err := GetMessageCriticalContents(msg)
 	if err != nil {
 		t.Errorf("unable to parse message %v: %v\n", messageID, err)
 	}
