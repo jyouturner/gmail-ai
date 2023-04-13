@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
+	"github.com/jyouturer/gmail-ai/internal/logging"
 	"github.com/jyouturer/gmail-ai/internal/nlp"
 	"google.golang.org/api/gmail/v1"
 )
@@ -53,7 +54,7 @@ func (h *Handler) HandleRejection(ctx context.Context, msg *gmail.Message) error
 		if err != nil {
 			return fmt.Errorf("error setting label on message %v: %v", msg.Id, err)
 		}
-		fmt.Println("Rejection email found!")
+		logging.Logger.Info("Rejection email found!")
 	}
 	return nil
 }

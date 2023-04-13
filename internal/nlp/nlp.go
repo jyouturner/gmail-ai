@@ -1,18 +1,20 @@
 package nlp
 
 import (
-	"fmt"
+	"math"
 	"sort"
 	"strings"
 
 	"github.com/jdkato/prose/v3"
+	"github.com/jyouturer/gmail-ai/internal/logging"
+	"go.uber.org/zap"
 )
 
 func ExtractTopSentenseFrom(n int, text string) (string, error) {
 
 	doc, err := prose.NewDocument(text)
 	if err != nil {
-		fmt.Println("Error while creating document:", err)
+		logging.Logger.Info("Error while creating document:", zap.Error(err))
 		return "", err
 	}
 
@@ -27,10 +29,10 @@ func ExtractTopSentenseFrom(n int, text string) (string, error) {
 	})
 
 	// Extract the top N sentences
-	topSentences := sentences[:n]
+	topSentences := sentences[:int(math.Min(float64(n), float64(len(sentences))))]
 
 	// Join the top sentences and print
 	topText := strings.Join(topSentences, " ")
-	fmt.Println("Top text:", topText)
+	logging.Logger.Info("Top text:", zap.String("top text", topText))
 	return topText, nil
 }

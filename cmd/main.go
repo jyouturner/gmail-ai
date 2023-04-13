@@ -34,7 +34,7 @@ func main() {
 				Name:  "label-rejection",
 				Usage: "label rejection emails",
 				Action: func(cCtx *cli.Context) error {
-					labelRejections(context.Background(), configFilePath)
+					labelRejections(configFilePath)
 					return nil
 				},
 			},
@@ -57,7 +57,7 @@ func main() {
 }
 
 // labelRejections labels rejection emails
-func labelRejections(ctx context.Context, configFilePath string) {
+func labelRejections(configFilePath string) {
 	// Load the configuration file
 	config, err := automation.LoadConfig(configFilePath)
 	if err != nil {
@@ -79,11 +79,8 @@ func labelRejections(ctx context.Context, configFilePath string) {
 	handler := automation.NewHandler(cp, gmailService)
 
 	// Process new emails
-	// Create a context with a timeout of 10 seconds
-	ctxTimeout, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
 	for {
-		automation.ProcessNewEmails(ctxTimeout, gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
-		time.Sleep(10 * time.Second)
+		automation.ProcessNewEmails(context.Background(), gmailService, "history.txt", []automation.EmailHandlerFunc{handler.HandleRejection})
+		time.Sleep(60 * time.Second)
 	}
 }

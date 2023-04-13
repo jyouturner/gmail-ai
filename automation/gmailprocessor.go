@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	integration "github.com/jyouturer/gmail-ai/integrations"
 	"github.com/jyouturer/gmail-ai/internal"
@@ -20,7 +21,9 @@ type EmailHandlerFunc func(ctx context.Context, email *gmail.Message) error
 
 // ProcessNewEmails retrieves new emails and processes them
 func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
-
+	// Create a context with a timeout of 10 seconds
+	ctxTimeout, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
 	processedMessages := internal.NewRingBuffer(100)
 
 	// Read the last historyId from the file
@@ -55,15 +58,12 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 				logging.Logger.Error("unable to retrieve message", zap.String("message", messageID), zap.Error(err))
 				continue
 			}
-			snippet := msg.Snippet
-			logging.Logger.Info(snippet)
-
 			// Process the email content with each handler function to determine if it meets the criteria
 			for _, handler := range handlers {
 				wg.Add(1)
 				go func(h EmailHandlerFunc) {
 					defer wg.Done()
-					err := h(ctx, msg)
+					err := h(ctxTimeout, msg)
 					if err != nil {
 						logging.Logger.Error("error processing email", zap.String("message", messageID), zap.Error(err))
 					}
@@ -82,8 +82,8 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 				// All email handler functions have completed
 				// Mark the message as processed in the ring buffer
 				processedMessages.Put(messageID)
-			case <-ctx.Done():
-				return ctx.Err()
+			case <-ctxTimeout.Done():
+				return ctxTimeout.Err()
 			}
 		}
 	}

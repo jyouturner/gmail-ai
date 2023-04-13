@@ -8,6 +8,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/jyouturer/gmail-ai/internal/logging"
+	"go.uber.org/zap"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
@@ -124,7 +126,7 @@ func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId ui
 	// If lastHistoryId is 0, perform a full sync
 	var history *gmail.ListHistoryResponse
 	if lastHistoryId == 0 {
-		fmt.Println("getting history for the first time from profie")
+		logging.Logger.Info("getting history for the first time from profie")
 		profile, err := gmailService.Users.GetProfile(userID).Do()
 		if err != nil {
 			log.Fatalf("Unable to get user profile: %v", err)
@@ -132,7 +134,7 @@ func GetHistoryList(gmailService *gmail.Service, userID string, lastHistoryId ui
 		lastHistoryId = profile.HistoryId
 	}
 	// List history records for messages that have changed since the last historyId
-	fmt.Println("last history id", lastHistoryId)
+	logging.Logger.Info("last history id", zap.Uint64("last history id", lastHistoryId))
 	history, err := gmailService.Users.History.List(userID).StartHistoryId(lastHistoryId).Do()
 	if err != nil {
 		return lastHistoryId, history, fmt.Errorf("unable to retrieve history list: %v", err)
@@ -183,7 +185,7 @@ func GetMessage(msg *gmail.Message) (string, error) {
 					// Do something with the message text
 					return text, nil
 				} else {
-					fmt.Println("Multipart Message is not plain text", part.MimeType)
+					logging.Logger.Info("Multipart Message is not plain text", zap.String("mimetype", part.MimeType))
 
 				}
 			}
@@ -201,7 +203,7 @@ func GetMessage(msg *gmail.Message) (string, error) {
 				// Do something with the message text
 				return text, nil
 			} else {
-				fmt.Println("Message is not plain text", payload.MimeType)
+				logging.Logger.Info("Message is not plain text", zap.String("mimetype", payload.MimeType))
 				return "", nil
 			}
 		}

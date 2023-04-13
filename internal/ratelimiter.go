@@ -2,10 +2,11 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/jyouturer/gmail-ai/internal/logging"
+	"go.uber.org/zap"
 )
 
 type DistributedRateLimiter struct {
@@ -55,15 +56,15 @@ end
 		// Run the Lua script and check the result
 		result, err := d.client.Eval(ctx, luaScript, []string{"my_api_key"}, d.maxCalls, d.interval, now).Result()
 		if err != nil {
-			fmt.Println("Error executing Lua script:", err)
+			logging.Logger.Info("Error executing Lua script:", zap.Error(err))
 			return
 		}
 
 		if result == int64(1) {
 			// Make your API call here
-			fmt.Println("API request:", i+1)
+			logging.Logger.Info("API request:", zap.Int("request", i+1))
 		} else {
-			fmt.Println("Rate limit exceeded")
+			logging.Logger.Info("Rate limit exceeded")
 			time.Sleep(d.interval)
 		}
 	}

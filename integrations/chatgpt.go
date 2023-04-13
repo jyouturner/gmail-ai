@@ -73,7 +73,7 @@ func (c *ChatGPTClient) IsRejectionEmail(emailContent string) (bool, error) {
 	if err := json.Unmarshal(responseBodyBytes, &chatGPTResponse); err != nil {
 		return false, err
 	}
-	//fmt.Println(chatGPTResponse.Choices)
+	//logging.Logger.Info(chatGPTResponse.Choices)
 	// Check if the response indicates a rejection email
 	if len(chatGPTResponse.Choices) == 0 {
 		// no response from API, but don't fail
