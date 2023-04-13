@@ -10,9 +10,9 @@ type Config struct {
 		Credentials string `json:"credentials"`
 		Token       string `json:"token"`
 	} `json:"gmail"`
-	RejectionCheck struct {
+	GRPCService struct {
 		URL string `json:"url"`
-	} `json:"rejectionCheck"`
+	} `json:"grpcService"`
 }
 
 func LoadConfig(path string) (*Config, error) {

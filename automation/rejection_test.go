@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	integration "github.com/jyouturer/gmail-ai/integrations"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 )
 
@@ -29,20 +30,20 @@ func TestMain(m *testing.M) {
 
 func TestRejection(t *testing.T) {
 	//packagetest.TestMain(nil)
-	// Create a connection pool with 10 RejectionCheck objects
-	cp, err := NewConnectionPool("localhost:50051", 2, time.Second*10)
+	// Create a connection pool with 10 GRPCClient objects
+	cp, err := integration.NewConnectionPool("localhost:50051", 2, time.Second*10)
 	if err != nil {
 		t.Errorf("Error creating connection pool: %v", err)
 	}
 	defer cp.Close()
 
-	rc, err := cp.GetRejectionCheck()
+	rc, err := cp.GetGRPCClient()
 
-	defer cp.ReturnRejectionCheck(rc)
+	defer cp.ReturnGRPCClient(rc)
 	if err != nil {
 		t.Errorf("Error get rejection chjeck: %v", err)
 	}
-	isRejection := rc.IsRejection(context.Background(), "email text goes here")
+	isRejection := IsRejection(context.Background(), rc, "email text goes here")
 
 	fmt.Printf("res: %v\n", isRejection)
 }

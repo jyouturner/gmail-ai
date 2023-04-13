@@ -3,7 +3,7 @@
       "credentials": "path_to_the_google_credential_json_file",
       "token": "gmail_token.json"
     },
-    "rejectionCheck": {
+    "grpcService": {
       "url": "localhost:50051"
     }
 }

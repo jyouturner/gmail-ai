@@ -106,7 +106,7 @@ and send to ML service to check.
       "credentials": ".....apps.googleusercontent.com.json",
       "token": "gmail_token.json"
     },
-    "rejectionCheck": {
+    "grpcService": {
       "url": "localhost:50051"
     }
   }
@@ -124,7 +124,8 @@ python3 grpcserver.py
 then in a different terminal, start the gmail process
 
 ````
-bin/gmailai-macos-amd64 --config config.json label-rejection
+bin/gmailai-macos-amd64 --help
+bin/gmailai-macos-amd64 --config config.json poll
 ````
 
 the first time you run the program, it will print out a link for you to copy to browser to give permission to access your gmail from your google project. After you grant permission, the program will create the access token and save in the "gmail_token.json" file.
