@@ -19,8 +19,8 @@ import (
 // Define a type for email handler functions
 type EmailHandlerFunc func(ctx context.Context, email *gmail.Message) error
 
-// ProcessNewEmails retrieves new emails and processes them
-func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
+// PollAndProcess retrieves new emails and processes them
+func PollAndProcess(ctx context.Context, gmailService *gmail.Service, historyFile string, handlers []EmailHandlerFunc) error {
 	// Create a context with a timeout of 10 seconds
 	ctxTimeout, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
@@ -37,6 +37,13 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 		return fmt.Errorf("unable to get histories %v", err)
 	}
 	logging.Logger.Debug("History:", zap.Int("count", len(histories.History)))
+	defer func() {
+		// Write the updated lastHistoryId to the file
+		err = writeHistoryId(historyFile, lastHistoryId)
+		if err != nil {
+			logging.Logger.Error("error saving history file", zap.String("historyFile", historyFile), zap.Error(err))
+		}
+	}()
 	// Create a WaitGroup to wait for all email handler functions to complete
 	var wg sync.WaitGroup
 	// Process each message returned by the history API
@@ -88,12 +95,6 @@ func ProcessNewEmails(ctx context.Context, gmailService *gmail.Service, historyF
 		}
 	}
 
-	// Write the updated lastHistoryId to the file
-	err = writeHistoryId(historyFile, lastHistoryId)
-	if err != nil {
-		logging.Logger.Error("error saving history file", zap.String("historyFile", historyFile), zap.Error(err))
-		return fmt.Errorf("unable to write last historyId to file: %v", err)
-	}
 	return nil
 }
 

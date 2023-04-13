@@ -85,7 +85,7 @@ func poll(configFilePath string) {
 
 	// Process new emails
 	for {
-		automation.ProcessNewEmails(context.Background(), gmailService, "history.txt", handlers)
+		automation.PollAndProcess(context.Background(), gmailService, "history.txt", handlers)
 		time.Sleep(60 * time.Second)
 	}
 }
