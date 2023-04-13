@@ -1,4 +1,4 @@
-package automation
+package root
 
 import (
 	"encoding/json"

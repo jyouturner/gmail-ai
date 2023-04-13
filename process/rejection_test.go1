@@ -1,4 +1,4 @@
-package automation
+package process
 
 import (
 	"context"
@@ -100,4 +100,31 @@ func TestIsRejection(t *testing.T) {
 	}
 	res := IsRejection(context.Background(), client, "Thank you for your interest in the Senior Engineering Manager, Quip role at Salesforce. Unfortunately, we are no longer hiring for this Your time and effort are greatly appreciated.")
 	fmt.Printf("res: %v, err: %v", res, err)
+}
+
+
+type mockRejectionCheckerClient struct {
+    IsRejectionFunc func(ctx context.Context, in *pb.IsRejectionRequest, opts ...grpc.CallOption) (*pb.IsRejectionResponse, error)
+}
+
+func (m *mockRejectionCheckerClient) IsRejection(ctx context.Context, in *pb.IsRejectionRequest, opts ...grpc.CallOption) (*pb.IsRejectionResponse, error) {
+    return m.IsRejectionFunc(ctx, in, opts...)
+}
+
+func TestIsRejection(t *testing.T) {
+    // Create a mock gRPC client that returns a predefined response
+    mockClient := &mockRejectionCheckerClient{
+        IsRejectionFunc: func(ctx context.Context, in *pb.IsRejectionRequest, opts ...grpc.CallOption) (*pb.IsRejectionResponse, error) {
+            return &pb.IsRejectionResponse{IsRejection: true}, nil
+        },
+    }
+
+    // Test the IsRejection function using the mock gRPC client
+    res, err := IsRejection(context.Background(), mockClient, "Test text")
+    if err != nil {
+        t.Errorf("Unexpected error: %v", err)
+    }
+    if !res {
+        t.Errorf("Expected true, got false")
+    }
 }
