@@ -1,10 +1,23 @@
 package nlp
 
 import (
+	"os"
 	"testing"
+
+	"github.com/jyouturer/gmail-ai/internal/logging"
 )
 
+func TestMain(m *testing.M) {
+	// Do stuff BEFORE the tests!
+	logging.Logger, _ = logging.NewLogger()
+	// Run the tests
+	exitVal := m.Run()
+	// Do stuff AFTER the tests!
+	os.Exit(exitVal)
+}
+
 func TestNLP(t *testing.T) {
+
 	emailBody := `
 	Thank you for applying for the Software Engineering Manager - Backend/API (Mobile team) opportunity. We appreciate your interest in becoming a part of the exciting things we’re up to here at Northwestern Mutual.
 

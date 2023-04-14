@@ -82,10 +82,11 @@ func poll(configFilePath string) {
 	handlers := []automation.EmailHandlerFunc{
 		hc.Process,
 	}
-
+	provider := automation.NewEmailProvider(automation.NewGmailService(gmailService))
+	history := automation.NewFileHistory("history.txt")
 	// Process new emails
 	for {
-		automation.PollAndProcess(context.Background(), gmailService, "history.txt", handlers)
+		provider.PollAndProcess(context.Background(), history, handlers)
 		time.Sleep(60 * time.Second)
 	}
 }

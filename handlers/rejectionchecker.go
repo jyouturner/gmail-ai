@@ -37,6 +37,7 @@ func NewRejectionChecker(grpcUrl string, grpcConnectionNumber int, grpcTimeoutSe
 func (h *RejectionChecker) IsRejection(ctx context.Context, text string) (bool, error) {
 	req := &integration.ClassifyRequest{EmailText: text}
 	res, err := h.checkRejectionGrpc(ctx, req)
+	//logging.Logger.Debug("IsRejection", zap.Bool("res", res.IsRejection))
 	if err != nil {
 		return false, fmt.Errorf("error calling IsRejection gRPC: %v", err)
 	}

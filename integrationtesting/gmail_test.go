@@ -1,9 +1,14 @@
-package integration
+//go:build integrationtesting
+// +build integrationtesting
+
+package integrationtesting
 
 import (
 	"fmt"
 	"os"
 	"testing"
+
+	integration "github.com/jyouturer/gmail-ai/integrations"
 )
 
 func ignoreTestWithoutEnvironmentVariables(t *testing.T, envVars ...string) {
@@ -16,7 +21,7 @@ func ignoreTestWithoutEnvironmentVariables(t *testing.T, envVars ...string) {
 
 func TestGmailGetMessages(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
-	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+	gmailService, err := integration.CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
 		t.Errorf("error creating gmail service: %v", err)
@@ -34,7 +39,7 @@ func TestGmailGetMessages(t *testing.T) {
 
 func TestCallWatch(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
-	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+	gmailService, err := integration.CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
 		t.Errorf("error creating gmail service: %v", err)
@@ -42,7 +47,7 @@ func TestCallWatch(t *testing.T) {
 	fmt.Printf("gmailService: %v\n", gmailService)
 	projectID := "theautomaticmanager"
 	topicName := "incoming-gmails"
-	err = CallWatch(gmailService, projectID, topicName)
+	err = integration.CallWatch(gmailService, projectID, topicName)
 	if err != nil {
 		t.Errorf("error calling watch: %v", err)
 	}
@@ -50,7 +55,7 @@ func TestCallWatch(t *testing.T) {
 
 func TestGetHistoryMessages(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
-	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+	gmailService, err := integration.CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
 		t.Errorf("error creating gmail service: %v", err)
@@ -61,7 +66,7 @@ func TestGetHistoryMessages(t *testing.T) {
 		t.Errorf("Unable to get user profile: %v", err)
 	}
 	lastHistoryId := profile.HistoryId
-	messages, err := GetHistorieMessages(gmailService, "me", lastHistoryId)
+	messages, err := integration.GetHistorieMessages(gmailService, "me", lastHistoryId)
 	if err != nil {
 		t.Errorf("error getting histories: %v", err)
 	}
@@ -78,7 +83,7 @@ func TestGetHistoryMessages(t *testing.T) {
 
 func TestGetHistoryList(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
-	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+	gmailService, err := integration.CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
 		t.Errorf("error creating gmail service: %v", err)
@@ -89,7 +94,7 @@ func TestGetHistoryList(t *testing.T) {
 		t.Errorf("Unable to get user profile: %v", err)
 	}
 	lastHistoryId := profile.HistoryId
-	lastHistoryId, history, err := GetHistoryList(gmailService, "me", lastHistoryId)
+	lastHistoryId, history, err := integration.GetHistoryList(gmailService, "me", lastHistoryId)
 	if err != nil {
 		t.Errorf("error getting histories: %v", err)
 	}
@@ -98,7 +103,7 @@ func TestGetHistoryList(t *testing.T) {
 
 func TestGmailGetMessageById(t *testing.T) {
 	ignoreTestWithoutEnvironmentVariables(t, "GMAIL_CREDENTIALS", "GMAIL_TOKEN")
-	gmailService, err := CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
+	gmailService, err := integration.CreateGmailService(os.Getenv("GMAIL_CREDENTIALS"), os.Getenv("GMAIL_TOKEN"))
 
 	if err != nil {
 		t.Errorf("error creating gmail service: %v", err)
@@ -110,7 +115,7 @@ func TestGmailGetMessageById(t *testing.T) {
 		t.Errorf("unable to retrieve message %v: %v\n", messageID, err)
 	}
 	fmt.Printf("msg snippet: %v\n", msg.Snippet)
-	text, err := GetMessageCriticalContents(msg)
+	text, err := integration.GetMessageCriticalContents(msg)
 	if err != nil {
 		t.Errorf("unable to parse message %v: %v\n", messageID, err)
 	}

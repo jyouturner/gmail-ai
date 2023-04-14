@@ -59,7 +59,6 @@ func (h *RejectionEmail) Process(ctx context.Context, msg *gmail.Message) error 
 		if err != nil {
 			return fmt.Errorf("error setting label on message %v: %v", msg.Id, err)
 		}
-		logging.Logger.Info("Rejection email found!")
 	}
 	return nil
 }

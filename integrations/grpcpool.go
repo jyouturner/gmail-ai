@@ -15,10 +15,10 @@ type GRPCClient struct {
 }
 
 type ConnectionPool struct {
-	pool      chan *GRPCClient
-	address   string
-	size      int
-	timeout   time.Duration
+	Pool      chan *GRPCClient
+	Address   string
+	Size      int
+	Timeout   time.Duration
 	mutex     sync.Mutex
 	waitGroup sync.WaitGroup
 }
@@ -42,19 +42,19 @@ func NewConnectionPool(address string, size int, timeout time.Duration) (*Connec
 	}
 
 	return &ConnectionPool{
-		pool:    pool,
-		address: address,
-		size:    size,
-		timeout: timeout,
+		Pool:    pool,
+		Address: address,
+		Size:    size,
+		Timeout: timeout,
 	}, nil
 }
 
 func (cp *ConnectionPool) GetGRPCClient() (*GRPCClient, error) {
 	logging.Logger.Info("Getting GRPCClient object from pool")
 	select {
-	case rc := <-cp.pool:
+	case rc := <-cp.Pool:
 		return rc, nil
-	case <-time.After(cp.timeout):
+	case <-time.After(cp.Timeout):
 		return nil, fmt.Errorf("timed out while waiting for GRPCClient object")
 	}
 }
@@ -62,7 +62,7 @@ func (cp *ConnectionPool) GetGRPCClient() (*GRPCClient, error) {
 func (cp *ConnectionPool) ReturnGRPCClient(rc *GRPCClient) {
 	logging.Logger.Info("Returning GRPCClient object to pool")
 	select {
-	case cp.pool <- rc:
+	case cp.Pool <- rc:
 	default:
 		// The pool is full, discard the GRPCClient object
 		cp.waitGroup.Add(1)
@@ -78,7 +78,7 @@ func (cp *ConnectionPool) Close() {
 	cp.mutex.Lock()
 	defer cp.mutex.Unlock()
 
-	close(cp.pool)
+	close(cp.Pool)
 
 	// Wait for all connections to be returned and closed
 	cp.waitGroup.Wait()
