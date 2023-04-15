@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	integration "github.com/jyouturer/gmail-ai/integrations"
+	integration "github.com/jyouturer/gmail-ai/integration"
 )
 
 func TestChatGPTAPI(t *testing.T) {

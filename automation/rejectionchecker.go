@@ -1,11 +1,11 @@
-package handler
+package automation
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	integration "github.com/jyouturer/gmail-ai/integrations"
+	integration "github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

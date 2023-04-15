@@ -1,4 +1,4 @@
-package handler
+package automation
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	integration "github.com/jyouturer/gmail-ai/integrations"
+	integration "github.com/jyouturer/gmail-ai/integration"
 )
 
 // NewMockClassifierServer creates a new mocked gRPC server for the Classifier service

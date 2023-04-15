@@ -86,7 +86,7 @@ and send to ML service to check.
     automation (the business logic)
         Config
         gmail handler including the rejection check
-    integrations
+    integration
         code to integrate with Gmail, ChatGPT etc
     internal
       logging
@@ -135,7 +135,7 @@ the first time you run the program, it will print out a link for you to copy to 
 ### Generate Go code from proto file
 
 ````sh
-protoc --proto_path=classifier --go_out=integrations --go_opt=paths=source_relative --go_opt=Mclassifier.proto=github.com/jyouturer/gmail-ai/integration --go-grpc_out=./integrations --go-grpc_opt=paths=source_relative --go-grpc_opt=Mclassifier.proto=github.com/jyouturer/gmail-ai/integration classifier.proto 
+protoc --proto_path=classifier --go_out=integration --go_opt=paths=source_relative --go_opt=Mclassifier.proto=github.com/jyouturer/gmail-ai/integration --go-grpc_out=./integration --go-grpc_opt=paths=source_relative --go-grpc_opt=Mclassifier.proto=github.com/jyouturer/gmail-ai/integration classifier.proto 
 ````
 
-above command will generate two files under the "integrations" folder, with package "integration"
+above command will generate two files under the "integration" folder, with package "integration"

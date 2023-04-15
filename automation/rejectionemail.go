@@ -1,10 +1,10 @@
-package handler
+package automation
 
 import (
 	"context"
 	"fmt"
 
-	integration "github.com/jyouturer/gmail-ai/integrations"
+	integration "github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"github.com/jyouturer/gmail-ai/internal/nlp"
 	"go.uber.org/zap"
@@ -31,21 +31,14 @@ type RejectionChecking interface {
 }
 
 // HandleRejectionEmail implement the EmailRejectionEmailFunc interface, it will be called by Email Processor
-func (h *RejectionEmail) Process(ctx context.Context, msg *gmail.Message) error {
+func (h *RejectionEmail) Process(ctx context.Context, msg Message) error {
 	// Get the text of the email
-	text, err := integration.GetMessageCriticalContents(msg)
-	if err != nil {
-		logging.Logger.Warn("error in parsing message, will use snippet", zap.String("id", msg.Id), zap.Error(err))
-		text = msg.Snippet
-	}
-	if text == "" {
-		logging.Logger.Warn("empty message from parsing, will use snippet", zap.String("id", msg.Id))
-		text = msg.Snippet
-	}
+	text := msg.Body
+
 	// use NLP to extract the top 3 sentences of the email body
 	topSentencens, err := nlp.ExtractTopSentenseFrom(3, text)
 	if err != nil {
-		return fmt.Errorf("unable to exract top sentences from message %v: %v", msg.Id, err)
+		return fmt.Errorf("unable to exract top sentences from message %v: %v", msg.ID, err)
 	}
 
 	res, err := h.RejectionChecking.IsRejection(ctx, topSentencens)
@@ -55,9 +48,9 @@ func (h *RejectionEmail) Process(ctx context.Context, msg *gmail.Message) error 
 	logging.Logger.Debug("IsRejection", zap.Bool("res", res))
 	// If the email is a rejection, apply the specified label
 	if res {
-		err := integration.SetLabel(h.GmailService, msg.Id, "Rejection", true, false)
+		err := integration.SetLabel(h.GmailService, msg.ID, "Rejection", true, false)
 		if err != nil {
-			return fmt.Errorf("error setting label on message %v: %v", msg.Id, err)
+			return fmt.Errorf("error setting label on message %v: %v", msg.ID, err)
 		}
 	}
 	return nil

@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	integration "github.com/jyouturer/gmail-ai/integrations"
+	integration "github.com/jyouturer/gmail-ai/integration"
 )
 
 func ignoreTestWithoutEnvironmentVariables(t *testing.T, envVars ...string) {
