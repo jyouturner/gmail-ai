@@ -11,15 +11,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Message struct {
-	ID      string
-	Subject string
-	From    string
-	To      string
-	Body    string
-	Payload []byte
-}
-
 // Define a type for message handler functions
 type MessageHandlerFunc func(ctx context.Context, msg Message) error
 

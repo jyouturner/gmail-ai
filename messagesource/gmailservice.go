@@ -3,9 +3,9 @@ package gmailservice
 import (
 	"fmt"
 
-	"github.com/jyouturer/gmail-ai/automation"
 	"github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
+	automation "github.com/jyouturer/gmail-ai/polling"
 	"go.uber.org/zap"
 	"google.golang.org/api/gmail/v1"
 )

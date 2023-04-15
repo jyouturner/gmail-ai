@@ -6,11 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/jyouturer/gmail-ai/automation"
+	activity "github.com/jyouturer/gmail-ai/activity"
 	config "github.com/jyouturer/gmail-ai/config"
-	"github.com/jyouturer/gmail-ai/gmailservice"
 	integration "github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
+	gmailservice "github.com/jyouturer/gmail-ai/messagesource"
+	automation "github.com/jyouturer/gmail-ai/polling"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 )
@@ -71,13 +72,13 @@ func poll(configFilePath string) {
 		log.Fatalf("Error creating Gmail service: %v", err)
 	}
 	// create process to handle rejection email
-	rc, closeFunc, err := automation.NewRejectionChecker(config.GRPCService.URL, 10, 10)
+	rc, closeFunc, err := activity.NewRejectionChecker(config.GRPCService.URL, 10, 10)
 	if err != nil {
 		logging.Logger.Fatal("Error creating Rejection Checker", zap.Error(err))
 	}
 	defer closeFunc()
 	// crate the gmail handler
-	hc := automation.NewRejectionEmail(gmailService, rc)
+	hc := activity.NewRejectionEmail(gmailService, rc)
 
 	handlers := []automation.MessageHandlerFunc{
 		hc.Process,
