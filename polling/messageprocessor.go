@@ -1,4 +1,4 @@
-package automation
+package polling
 
 import (
 	"context"
@@ -6,19 +6,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jyouturer/gmail-ai/datamodel"
 	"github.com/jyouturer/gmail-ai/internal"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"go.uber.org/zap"
 )
 
 // Define a type for message handler functions
-type MessageHandlerFunc func(ctx context.Context, msg Message) error
+type MessageHandlerFunc func(ctx context.Context, msg datamodel.Message) error
 
 // Define an interface for message services
 type MessageService interface {
 	GetMessageIds(userId string, startHistoryId uint64) (uint64, []string, error)
-	GetMessage(userId string, id string) (Message, error)
-	GetMessages(userId string, ids []string) ([]Message, error)
+	GetMessage(userId string, id string) (datamodel.Message, error)
+	GetMessages(userId string, ids []string) ([]datamodel.Message, error)
 }
 
 // Define a struct to represent a message provider
@@ -90,7 +91,7 @@ func (ep *MessageProvider) PollAndProcess(ctx context.Context, pollHistory PollH
 	return nil
 }
 
-func handleMessage(ctx context.Context, handler MessageHandlerFunc, msg Message, wg *sync.WaitGroup) {
+func handleMessage(ctx context.Context, handler MessageHandlerFunc, msg datamodel.Message, wg *sync.WaitGroup) {
 	defer wg.Done()
 	if err := handler(ctx, msg); err != nil {
 		logging.Logger.Error("error processing message", zap.String("message", msg.ID), zap.Error(err))

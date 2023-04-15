@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	integration "github.com/jyouturer/gmail-ai/integration"
+	"github.com/jyouturer/gmail-ai/datamodel"
+	"github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
 	"github.com/jyouturer/gmail-ai/internal/nlp"
-	automation "github.com/jyouturer/gmail-ai/polling"
 	"go.uber.org/zap"
 	"google.golang.org/api/gmail/v1"
 )
@@ -32,7 +32,7 @@ type RejectionChecking interface {
 }
 
 // HandleRejectionEmail implement the EmailRejectionEmailFunc interface, it will be called by Email Processor
-func (h *RejectionEmail) Process(ctx context.Context, msg automation.Message) error {
+func (h *RejectionEmail) Process(ctx context.Context, msg datamodel.Message) error {
 	// Get the text of the email
 	text := msg.Body
 

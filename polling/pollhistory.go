@@ -1,4 +1,4 @@
-package automation
+package polling
 
 import (
 	"io/ioutil"

@@ -1,4 +1,4 @@
-package automation
+package datamodel
 
 type Message struct {
 	ID      string

@@ -10,8 +10,8 @@ import (
 	config "github.com/jyouturer/gmail-ai/config"
 	integration "github.com/jyouturer/gmail-ai/integration"
 	"github.com/jyouturer/gmail-ai/internal/logging"
-	gmailservice "github.com/jyouturer/gmail-ai/messagesource"
-	automation "github.com/jyouturer/gmail-ai/polling"
+	"github.com/jyouturer/gmail-ai/messagesource"
+	"github.com/jyouturer/gmail-ai/polling"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 )
@@ -80,11 +80,11 @@ func poll(configFilePath string) {
 	// crate the gmail handler
 	hc := activity.NewRejectionEmail(gmailService, rc)
 
-	handlers := []automation.MessageHandlerFunc{
+	handlers := []polling.MessageHandlerFunc{
 		hc.Process,
 	}
-	provider := automation.NewMessageProvider(gmailservice.NewGmailService(gmailService))
-	history := automation.NewFileHistory("history.txt")
+	provider := polling.NewMessageProvider(messagesource.NewGmailService(gmailService))
+	history := polling.NewFileHistory("history.txt")
 	// Process new emails
 	for {
 		provider.PollAndProcess(context.Background(), history, handlers)
